@@ -61,12 +61,13 @@ export class Hub {
     if (b.off) { if (this.s.delete(uid)) this.ver++; return J({ ok: 1 }); }
     const un = String(b.n || "").slice(0, 40), role = roleOf(this.envv, uid, un, b.k);
     const old = this.s.get(uid), jid = String(b.j || "").slice(0, 64);
-    if (!old || old.jid !== jid || old.role !== role) this.ver++;
-    this.s.set(uid, { uid, un, dn: String(b.d || un).slice(0, 40), pid: String(b.p || "").slice(0, 20), jid, role, t: now });
+    const gn = String(b.g || "").slice(0, 80);
+    if (!old || old.jid !== jid || old.role !== role || old.gn !== gn) this.ver++;
+    this.s.set(uid, { uid, un, dn: String(b.d || un).slice(0, 40), pid: String(b.p || "").slice(0, 20), jid, gn, role, t: now });
     if (Array.isArray(b.a) && b.a.length) { const l = this.q.get(uid); if (l) { const f = l.filter(e => !b.a.includes(e.id)); f.length ? this.q.set(uid, f) : this.q.delete(uid); } }
     const r = { c: this.s.size, v: this.ver, e: this.q.get(uid) || [], m: {}, r: role };
     for (const s of this.s.values()) if (s.role) r.m[s.role === "owner" ? "o" : "c"] = [s.jid, s.un];
-    if (b.w && b.v !== this.ver) { r.l = []; for (const s of this.s.values()) { if (r.l.length >= MAXL) break; r.l.push([s.uid, s.un, s.dn, s.pid, s.jid]); } }
+    if (b.w && b.v !== this.ver) { r.l = []; for (const s of this.s.values()) { if (r.l.length >= MAXL) break; r.l.push([s.uid, s.un, s.dn, s.pid, s.jid, s.gn]); } }
     return J(r);
   }
 }
