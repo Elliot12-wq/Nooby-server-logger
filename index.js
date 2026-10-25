@@ -5,10 +5,11 @@ const J = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: 
 const eq = (a, b) => { a = String(a || ""); b = String(b || ""); let d = a.length ^ b.length; for (let i = 0; i < b.length; i++) d |= (a.charCodeAt(i) || 0) ^ b.charCodeAt(i); return !!b && d === 0; };
 const has = (list, uid, un) => String(list || "").toLowerCase().split(",").map(s => s.trim()).filter(Boolean).some(t => t === String(uid) || t === String(un || "").toLowerCase());
 const OIDS = env => env.OWNER_IDS || "Kingbaconnon19";
+const CIDS = env => env.COOWNER_IDS || "helloman1_23";
 // A key is only required when the OWNER_KEY / COOWNER_KEY secret exists; otherwise the username / ID alone decides.
 const roleOf = (env, uid, un, k) => {
   const ok = (key, ids) => has(ids, uid, un) && (!key || eq(k, key));
-  return ok(env.OWNER_KEY, OIDS(env)) ? "owner" : ok(env.COOWNER_KEY, env.COOWNER_IDS) ? "coowner" : null;
+  return ok(env.OWNER_KEY, OIDS(env)) ? "owner" : ok(env.COOWNER_KEY, CIDS(env)) ? "coowner" : null;
 };
 
 export default {
@@ -47,7 +48,7 @@ export class Hub {
       if (!x || !["kill", "deanimate", "kick", "ban", "unban"].includes(t)) return J({ err: "bad" }, 400);
       const tgt = this.s.get(x);
       if (tgt && tgt.role && (role !== "owner" || tgt.role === "owner")) return J({ err: "protected" }, 403);
-      if (has(OIDS(this.envv), x, tgt && tgt.un) || (role !== "owner" && has(this.envv.COOWNER_IDS, x, tgt && tgt.un))) return J({ err: "protected" }, 403);
+      if (has(OIDS(this.envv), x, tgt && tgt.un) || (role !== "owner" && has(CIDS(this.envv), x, tgt && tgt.un))) return J({ err: "protected" }, 403);
       if (t === "unban") { delete this.bans[x]; await this.st.storage.put("bans", this.bans); return J({ ok: 1 }); }
       if (t === "ban") { this.bans[x] = { by: uid, t: now }; await this.st.storage.put("bans", this.bans); }
       else if (!tgt) return J({ err: "offline" }, 404);
