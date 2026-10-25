@@ -1,5 +1,5 @@
 name = "nooby-server-logger"
-main = "src/index.js"
+main = "index.js"
 compatibility_date = "2025-01-01"
 
 [[durable_objects.bindings]]
